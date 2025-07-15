@@ -19,7 +19,7 @@ class Patbase {
     // Constructor to initialize the database connection
     // and set the default table name
     // Default table is 'users' if not specified
-    public function __construct(?string $host='localhost', string $database_name, string $username, string $password, string $table = 'users') {
+    public function __construct(string $database_name, string $username, string $password, string $table = 'users', string $host='localhost') {
         // Set table
         $this->table = $table;
         // Create a new PDO connection with safeguards
