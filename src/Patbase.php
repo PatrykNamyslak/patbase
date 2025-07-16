@@ -31,13 +31,15 @@ class Patbase {
     }
     // Query the database and return results
     public function query(string $query): Query{
-        return new Query(query: $query, database: $this);
+        return new Query(query: $query, database: $this, params: NULL);
     }
-    // Execute a prepared statement
-    public function execute(string $sql, array $params = []): bool {
-        $stmt = $this->connection->prepare($sql);
-        return $stmt->execute($params);
+    /**
+     * Alias for $this->query();
+     */
+    public function prepare(string $query, ?array $params): Query{
+        return new Query($query, $this, $params);
     }
+
     public function connection(): \PDO {
         return $this->connection;
     }
@@ -47,21 +49,36 @@ class Patbase {
 
 class Query extends Patbase{
     protected string $query;
+    protected ?array $params;
     public \PDO $connection;
-    protected function __construct(string $query, Patbase $database){
+
+
+    protected function __construct(string $query, Patbase $database, ?array $params){
         $this->query = $query;
+        $this->params = $params;
         $this->connection = $database->connection;
     }
+
     public function fetch(){
-        $stmt = $this->connection->query($this->query);
+        if ($this->params){
+            $stmt = $this->connection->prepare($this->query);
+            $stmt->execute($this->params);
+        }else{
+            $stmt = $this->connection->query($this->query);
+        }
         $data = $stmt->fetch(\PDO::FETCH_ASSOC);
         return $data;
     }
     /**
-     * A non prepared statement query [FOR INTERNAL USE ONLY]
+     * Executes a non prepared and a prepared statement
      */
     public function fetchAll(){
-        $stmt = $this->connection->query($this->query);
+        if ($this->params){
+            $stmt = $this->connection->prepare($this->query);
+            $stmt->execute($this->params);
+        }else{
+            $stmt = $this->connection->query($this->query);
+        }
         $data = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         return $data;
     }
