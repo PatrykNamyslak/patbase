@@ -82,6 +82,14 @@ class Query extends Patbase{
         $data = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         return $data;
     }
+    public function execute(){
+        if ($this->params){
+            $stmt = $this->connection->prepare($this->query);
+            $stmt->execute($this->params);
+        }else{
+            $stmt = $this->connection->query($this->query);
+        }
+    }
 }
 
 ?>
