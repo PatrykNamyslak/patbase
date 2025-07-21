@@ -8,6 +8,8 @@ use PDOException;
  */
 class Patbase {
     public \PDO $connection;
+    public string $db;
+    public string $database;
     public string $table;
     /**
      * @param string $host : Host for your database e.g localhost.
@@ -22,6 +24,9 @@ class Patbase {
     public function __construct(string $database_name, string $username, string $password, string $table = 'users', string $host='localhost') {
         // Set table
         $this->table = $table;
+        // Set database
+        $this->db = $database_name;
+        $this->database = $database_name;
         // Create a new PDO connection with safeguards
         try{
             $this->connection = new \PDO("mysql:host={$host};dbname={$database_name}", $username, $password);
