@@ -9,6 +9,9 @@ use PDOException;
 class Patbase {
     public \PDO $connection;
     public string $db;
+    protected string $username;
+    protected string $password;
+    public string $dsn;
     public string $database;
     public string $table;
     /**
@@ -27,12 +30,12 @@ class Patbase {
         // Set database
         $this->db = $database_name;
         $this->database = $database_name;
+        //
+        $this->username = $username;
+        $this->password = $password;
+        $this->dsn = "mysql:host={$host};dbname={$database_name}";
         // Create a new PDO connection with safeguards
-        try{
-            $this->connection = new \PDO("mysql:host={$host};dbname={$database_name}", $username, $password);
-        }catch(PDOException $e){
-            throw new Exception("Database connection failed: " . $e->getMessage());
-        }
+        $this->connect();
     }
     // Query the database and return results
     public function query(string $query): Query{
@@ -44,9 +47,30 @@ class Patbase {
     public function prepare(string $query, ?array $params): Query{
         return new Query($query, $this, $params);
     }
-
+    function __serialize(){
+        return [
+            'dsn' => $this->dsn,
+            'username' => $this->username,
+            'password' => $this->password,
+            'database' => $this->database,
+        ];
+    }
+    function __unserialize(array $data){
+        $this->dsn = $data['dsn'];
+        $this->username = $data['username'];
+        $this->password = $data['password'];
+        $this->database = $data['database'];
+        $this->connect();
+    }
     public function connection(): \PDO {
         return $this->connection;
+    }
+    private function connect(){
+        try{
+            $this->connection = new \PDO($this->dsn, $this->username, $this->password);
+        }catch(PDOException $e){
+            throw new Exception("Database connection failed: " . $e->getMessage());
+        }
     }
 }
 
